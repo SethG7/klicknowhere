@@ -1,0 +1,1 @@
+CREATE POLICY restaurants_super_admin_select ON public.restaurants FOR SELECT TO authenticated USING (public.fn_is_super_admin());

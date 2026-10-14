@@ -1,0 +1,2 @@
+CREATE POLICY restaurants_super_admin_update ON public.restaurants FOR UPDATE TO authenticated USING (public.fn_is_super_admin()) WITH CHECK (public.fn_is_super_admin());
+ALTER TABLE public.restaurants ADD CONSTRAINT restaurants_commission_rate_range CHECK (commission_rate >= 0 AND commission_rate <= 0.5) NOT VALID;

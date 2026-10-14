@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791858136260,
+      "tag": "0000_klick_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791858178052,
+      "tag": "0001_klick_seed_data",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791858485234,
+      "tag": "0002_admin_fleet_policies",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791858816790,
+      "tag": "0003_admin_commission_rates",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791859657988,
+      "tag": "0004_restore_signup_trigger_and_founders",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791859673833,
+      "tag": "0005_super_admin_read_all_restaurants",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791862780270,
+      "tag": "0006_driver_commissions_hours_restaurant_deals",
+      "breakpoints": true
+    }
+  ]
+}

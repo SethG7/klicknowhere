@@ -1,0 +1,1 @@
+UPDATE public.profiles SET role = 'super_admin', status = 'active' WHERE id = (SELECT id FROM auth.users WHERE email = 'giuninkola99@gmail.com');

@@ -1,0 +1,3 @@
+create policy drivers_admin_update on public.drivers for update to authenticated using (public.fn_is_super_admin() or public.fn_is_city_admin_of(city_id)) with check (public.fn_is_super_admin() or public.fn_is_city_admin_of(city_id));
+create policy earnings_admin_read on public.driver_earnings for select to authenticated using (public.fn_is_super_admin());
+create policy earnings_admin_update on public.driver_earnings for update to authenticated using (public.fn_is_super_admin()) with check (public.fn_is_super_admin());

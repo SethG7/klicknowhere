@@ -1,0 +1,13 @@
+grant select on public.countries, public.cities, public.delivery_zones, public.restaurants, public.menu_categories, public.products, public.product_options, public.product_option_values, public.food_categories, public.restaurant_food_categories, public.deals, public.promotions to anon, authenticated;
+grant select, insert, update on public.profiles to authenticated;
+grant all on public.profiles to service_role;
+grant select, insert, update, delete on public.addresses, public.favorites, public.notifications, public.reviews to authenticated;
+grant all on public.addresses, public.favorites, public.notifications, public.reviews to service_role;
+grant select, insert, update on public.restaurant_applications, public.driver_applications to authenticated;
+grant all on public.restaurant_applications, public.driver_applications to service_role;
+grant select, insert, update on public.restaurants, public.menu_categories, public.products, public.product_options, public.product_option_values, public.restaurant_users, public.restaurant_food_categories to authenticated;
+grant all on public.restaurants, public.menu_categories, public.products, public.product_options, public.product_option_values, public.restaurant_users, public.restaurant_food_categories to service_role;
+grant select, insert, update on public.orders, public.order_items, public.order_status_history, public.deliveries, public.payments, public.drivers, public.driver_earnings, public.restaurant_commissions to authenticated;
+grant all on public.orders, public.order_items, public.order_status_history, public.deliveries, public.payments, public.drivers, public.driver_earnings, public.restaurant_commissions to service_role;
+grant select on public.city_admins, public.staff_invitations, public.audit_logs to authenticated;
+grant all on public.city_admins, public.staff_invitations, public.audit_logs to service_role;
