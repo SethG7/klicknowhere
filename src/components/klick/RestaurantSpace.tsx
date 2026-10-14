@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, Clock3, ImagePlus, MapPin, Pencil, Plus, Power, Store, WalletCards, X } from "lucide-react";
+import { Check, Clock3, MapPin, Pencil, Plus, Power, Store, WalletCards, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/klick";
-import { supabase } from "@/integrations/supabase/client";
 import {
   addRestaurantManager,
   createMenuCategory,
@@ -15,7 +14,6 @@ import {
   removeRestaurantManager,
   getOperationsDashboard,
   saveProduct,
-  saveRestaurantMedia,
   toggleProduct,
   toggleRestaurant,
   updateRestaurantOrderStatus,
@@ -44,7 +42,7 @@ function Metric({ icon: Icon, label, value }: { icon: typeof Clock3; label: stri
 export function RestaurantSpace({ data }: { data: Data }) {
   const queryClient = useQueryClient();
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["operations"] });
-  const [tab, setTab] = useState<"commandes" | "menu" | "identite" | "chiffres" | "equipe">("commandes");
+  const [tab, setTab] = useState<"commandes" | "menu" | "chiffres" | "equipe">("commandes");
   const restaurant = data.restaurants[0];
   const currency = data.orders[0]?.currency_code ?? "CDF";
   const switchRestaurant = useServerFn(toggleRestaurant);
@@ -61,7 +59,6 @@ export function RestaurantSpace({ data }: { data: Data }) {
   const tabs = [
     ["commandes", `Commandes${active.length ? ` (${active.length})` : ""}`],
     ["menu", "Menu"],
-    ...(data.isOwner ? ([ ["identite", "Logo & couverture"] ] as const) : []),
     ["chiffres", data.isOwner ? "Chiffres & commissions" : "Chiffre du jour"],
     ...(data.isOwner ? ([["equipe", "Mon équipe"]] as const) : []),
   ] as const;
@@ -105,63 +102,11 @@ export function RestaurantSpace({ data }: { data: Data }) {
       <div className="mt-6">
         {tab === "commandes" && <OrdersTab orders={active} onDone={refresh} />}
         {tab === "menu" && <MenuTab data={data} restaurantId={restaurant.id} currency={currency} onDone={refresh} />}
-        {tab === "identite" && data.isOwner && <RestaurantMediaTab restaurant={restaurant} onDone={refresh} />}
         {tab === "chiffres" && <FiguresTab data={data} currency={currency} />}
         {tab === "equipe" && data.isOwner && <TeamTab restaurantId={restaurant.id} />}
       </div>
     </>
   );
-}
-
-function RestaurantMediaTab({ restaurant, onDone }: { restaurant: Data["restaurants"][number]; onDone: () => void }) {
-  const saveMedia = useServerFn(saveRestaurantMedia);
-  const [busy, setBusy] = useState<"logo" | "cover" | null>(null);
-  const [logoUrl, setLogoUrl] = useState(restaurant.logo_url ?? "");
-  const [coverUrl, setCoverUrl] = useState(restaurant.cover_url ?? "");
-
-  async function upload(kind: "logo" | "cover", file?: File) {
-    if (!file) return;
-    if (!file.type.startsWith("image/") || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      toast.error("Format accepté : JPG, PNG ou WebP."); return;
-    }
-    if (file.size > 5 * 1024 * 1024) { toast.error("Image trop volumineuse : 5 Mo maximum."); return; }
-    setBusy(kind);
-    try {
-      const ext = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
-      const path = `${restaurant.id}/${kind}/${crypto.randomUUID()}.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("klick-restaurant-media").upload(path, file, { contentType: file.type, upsert: false });
-      if (uploadError) throw uploadError;
-      const { data: publicData } = supabase.storage.from("klick-restaurant-media").getPublicUrl(path);
-      await saveMedia({ data: { restaurantId: restaurant.id, kind, url: publicData.publicUrl } });
-      if (kind === "logo") setLogoUrl(publicData.publicUrl); else setCoverUrl(publicData.publicUrl);
-      toast.success(kind === "logo" ? "Logo mis à jour." : "Couverture mise à jour.");
-      onDone();
-    } catch (error) { toast.error(error instanceof Error ? error.message : "Téléversement impossible."); }
-    finally { setBusy(null); }
-  }
-
-  async function remove(kind: "logo" | "cover") {
-    try {
-      await saveMedia({ data: { restaurantId: restaurant.id, kind, url: null } });
-      if (kind === "logo") setLogoUrl(""); else setCoverUrl("");
-      toast.success("Image retirée du profil."); onDone();
-    } catch (error) { toast.error(error instanceof Error ? error.message : "Suppression impossible."); }
-  }
-
-  return <div className="grid gap-5 md:grid-cols-2">
-    {([ { kind: "logo", label: "Logo du restaurant", url: logoUrl }, { kind: "cover", label: "Image de couverture", url: coverUrl } ] as const).map((item) => (
-      <section key={item.kind} className="space-y-3 rounded-2xl border border-border bg-card p-5">
-        <h2 className="font-bold">{item.label}</h2>
-        {item.url ? <img src={item.url} alt={item.label} className={item.kind === "logo" ? "h-32 w-32 rounded-2xl object-cover" : "h-36 w-full rounded-xl object-cover"} /> : <div className="flex h-32 items-center justify-center rounded-xl bg-muted text-sm text-muted-foreground">Aucune image ajoutée</div>}
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-          <ImagePlus className="h-4 w-4" /> {busy === item.kind ? "Envoi en cours…" : item.url ? "Remplacer l’image" : "Ajouter une image"}
-          <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={busy !== null} onChange={(e) => { void upload(item.kind, e.currentTarget.files?.[0]); e.currentTarget.value = ""; }} />
-        </label>
-        {item.url && <Button variant="outline" size="sm" disabled={busy !== null} onClick={() => void remove(item.kind)}>Retirer</Button>}
-        <p className="text-xs text-muted-foreground">JPG, PNG ou WebP · 5 Mo maximum.</p>
-      </section>
-    ))}
-  </div>;
 }
 
 function OrdersTab({ orders, onDone }: { orders: Data["orders"]; onDone: () => void }) {
@@ -240,7 +185,6 @@ function MenuTab({ data, restaurantId, currency, onDone }: { data: Data; restaur
           description: String(f.get("description") ?? ""),
           price: Number(f.get("price")),
           categoryId: (f.get("categoryId") as string) || null,
-          imageUrl: String(f.get("imageUrl") ?? "").trim() || null,
         },
       });
       toast.success("Plat enregistré.");
@@ -285,23 +229,6 @@ function MenuTab({ data, restaurantId, currency, onDone }: { data: Data; restaur
             {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
           <input name="description" defaultValue={current?.description ?? ""} placeholder="Description (facultatif)" className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm" />
-          <input name="imageUrl" type="url" defaultValue={current?.image_url ?? ""} placeholder="URL de la photo (facultatif)" className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:col-span-2" />
-          {current && <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border p-3 text-sm sm:col-span-2">
-            <ImagePlus className="h-5 w-5" /> Téléverser une photo du plat (JPG, PNG, WebP · 5 Mo max)
-            <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={async (e) => {
-              const file = e.currentTarget.files?.[0]; e.currentTarget.value = ""; if (!file) return;
-              if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) { toast.error("Choisissez une image JPG, PNG ou WebP de 5 Mo maximum."); return; }
-              try {
-                const ext = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
-                const path = `${restaurantId}/dishes/${crypto.randomUUID()}.${ext}`;
-                const { error } = await supabase.storage.from("klick-restaurant-media").upload(path, file, { contentType: file.type, upsert: false });
-                if (error) throw error;
-                const { data: publicData } = supabase.storage.from("klick-restaurant-media").getPublicUrl(path);
-                await save({ data: { id: current.id, restaurantId, name: current.name, description: current.description ?? "", price: Number(current.price), categoryId: current.category_id, imageUrl: publicData.publicUrl } });
-                toast.success("Photo du plat enregistrée."); onDone(); setEditing(null);
-              } catch (error) { toast.error(error instanceof Error ? error.message : "Téléversement impossible."); }
-            }} />
-          </label>}
           <div className="flex gap-2 sm:col-span-2">
             <Button type="submit" className="rounded-full">Enregistrer</Button>
             <Button type="button" variant="ghost" onClick={() => setEditing(null)}>Annuler</Button>
@@ -319,12 +246,9 @@ function MenuTab({ data, restaurantId, currency, onDone }: { data: Data; restaur
             <div className="mt-2 divide-y divide-border rounded-2xl border border-border bg-card">
               {g.items.map((p) => (
                 <div key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                  <div className="flex min-w-0 items-center gap-3">
-                    {p.image_url ? <img src={p.image_url} alt={p.name} className="h-14 w-14 rounded-xl object-cover" loading="lazy" /> : <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-muted text-muted-foreground"><ImagePlus className="h-5 w-5" /></div>}
-                    <div className="min-w-0">
+                  <div className="min-w-0">
                     <p className="truncate font-medium">{p.name}</p>
                     <p className="text-sm text-muted-foreground">{formatPrice(Number(p.price), currency)}</p>
-                    </div>
                   </div>
                   <div className="flex shrink-0 gap-2">
                     <Button size="icon" variant="ghost" aria-label={`Modifier ${p.name}`} onClick={() => setEditing(p)}><Pencil /></Button>

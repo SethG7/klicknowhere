@@ -58,6 +58,11 @@ export function SiteHeader({
           <Link to="/suivi" search={{ commande: "", tel: "" }} className={`hidden md:inline-block ${navLinkClass}`}>
             Suivi
           </Link>
+          {user && (
+            <Link to="/devenir-partenaire" className={`hidden lg:inline-block ${navLinkClass}`}>
+              Devenir partenaire
+            </Link>
+          )}
           {isPartner && (
             <Link to="/operations" className={`hidden md:inline-block ${navLinkClass}`}>
               Espace pro
@@ -105,6 +110,15 @@ export function SiteHeader({
                   >
                     Suivre une commande
                   </Link>
+                  {user && (
+                    <Link
+                      to="/devenir-partenaire"
+                      onClick={() => setOpen(false)}
+                      className="rounded-md px-3 py-2 hover:bg-surface-warm"
+                    >
+                      Devenir partenaire
+                    </Link>
+                  )}
                   {isPartner && (
                     <Link
                       to="/operations"
