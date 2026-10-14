@@ -1,26 +1,24 @@
-# KLICK — application de livraison
+# Klick projet app
 
-KLICK est une application web React/TanStack Start avec Supabase pour les données et l'authentification. Le périmètre de test initial reste Kinshasa, RDC; les paiements Mobile Money ne sont pas intégrés par API et restent confirmés manuellement.
+Implement exactly the screenshot and nothing else
 
-## Développement local
+This project was built with [Lovable](https://lovable.dev).
 
-Prérequis : Node.js 22+ et Bun (le dépôt utilise `bun.lock`).
+## Build with Lovable
 
-```bash
-cp .env.example .env
-# Remplir les quatre variables Supabase avec les valeurs du projet de test
-bun install --frozen-lockfile
-bun run dev
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/850ca1c5-5b01-4a22-8fc8-4cdfc731b66f).
+
+- **Ship faster**: describe what you want to build and Lovable handles the code.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+
+## Development
+
+Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+
+```sh
+git clone <this-repository-url>
+cd <repository-name>
+npm i
+npm run dev
 ```
-
-## Contrôles
-
-```bash
-bun run typecheck
-bun run build
-bun run lint
-```
-
-## Déploiement et migrations
-
-Lire impérativement [`docs/DEPLOYMENT_GITHUB_VERCEL_SUPABASE.md`](docs/DEPLOYMENT_GITHUB_VERCEL_SUPABASE.md) avant d'importer sur GitHub/Vercel ou de pousser des migrations Supabase. Utilisez un projet Supabase de staging pour les tests et ne commitez jamais `.env` ni une clé service role.
